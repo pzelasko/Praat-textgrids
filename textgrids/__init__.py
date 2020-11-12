@@ -175,11 +175,11 @@ class Tier(list):
 class TextGrid(OrderedDict):
     '''TextGrid is a dict of tier names (keys) and Tiers (values).'''
 
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, coding=None):
         self.xmin = self.xmax = 0.0
         self.filename = filename
         if self.filename:
-            self.read(self.filename)
+            self.read(self.filename, coding=coding)
 
     def __repr__(self):
         '''Return Praat (long) text format representation'''
@@ -284,7 +284,7 @@ class TextGrid(OrderedDict):
                                                  text=elem.text)
         return out
 
-    def parse(self, data):
+    def parse(self, data, coding=None):
         '''Parse textgrid data.
 
         Obligatory argument "data" is bytes.
@@ -301,11 +301,12 @@ class TextGrid(OrderedDict):
             except (IndexError, ValueError):
                 raise BinaryError
         else:
-            coding = 'utf-8'
-            # Note and then discard BOM
-            if data[:2] == b'\xfe\xff':
-                coding = 'utf-16-be'
-                data = data[2:]
+            if coding is None:
+              coding = 'utf-8'
+              # Note and then discard BOM
+              if data[:2] == b'\xfe\xff':
+                  coding = 'utf-16-be'
+                  data = data[2:]
             # Now convert to a text buffer
             buff = [s.strip() for s in data.decode(coding).split('\n')]
             # Check and then discard header
@@ -424,7 +425,7 @@ class TextGrid(OrderedDict):
                     p += 3
             self[tier_name] = tier
 
-    def read(self, filename):
+    def read(self, filename, coding=None):
         '''Read given file as a TextGrid.
 
         "filename" is the name of the file.
@@ -432,7 +433,7 @@ class TextGrid(OrderedDict):
         self.filename = filename
         with open(self.filename, 'rb') as infile:
             data = infile.read()
-        self.parse(data)
+        self.parse(data, coding=coding)
 
     def tier_from_csv(self, tier_name, filename):
         '''Import CSV file to an interval or point tier.
