@@ -311,7 +311,8 @@ class TextGrid(OrderedDict):
             buff = [s.strip() for s in data.decode(coding).split('\n')]
             # Check and then discard header
             if buff[:len(text)] != text:
-                raise TypeError
+                import warnings
+                warnings.warn('The header might not be correct - trying to parse anyway...')
             buff = buff[len(text):]
             # If the next line starts with a number, this is a short textgrid
             if buff[0][0] in '-0123456789':
